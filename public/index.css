@@ -1,0 +1,62 @@
+/* Reset some default styles */
+body,
+html {
+    margin: 0;
+    padding: 0;
+}
+
+/* Apply styles to the body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Style the root container */
+#root {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Adjust the maximum width as needed */
+    width: 100%;
+    text-align: center;
+}
+
+/* Style the title */
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #0078d4; /* Title color */
+}
+
+/* Style the paragraph */
+p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+/* Style the link */
+a {
+    text-decoration: none;
+    color: #0078d4; /* Link color */
+}
+
+/* Style the link icon */
+.link-icon {
+    width: 24px;
+    height: 24px;
+    fill: #0078d4; /* Icon color */
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Style the script tag */
+script {
+    display: block;
+    margin-top: 20px;
+}

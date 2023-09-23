@@ -1,0 +1,176 @@
+<!-- binyamin haimov 314750704
+     ordaviv israelov 209271774-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Costs Manager</title>
+    <style src="index.css"></style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body class="col-auto">
+<h1>Costs Manager</h1>
+<h2>Add New Cost</h2>
+
+<label for="descriptionText">Description:</label><br>
+<input class="form-control" type="text" id="descriptionText" placeholder="Description"><br>
+
+<label for="categoriesText">Category:</label><br>
+<select class="form-select" id="categoriesText">
+    <option value="Food">Food</option>
+    <option value="Health">Health</option>
+    <option value="Housing">Housing</option>
+    <option value="Travel">Travel</option>
+    <option value="Education">Education</option>
+    <option value="Transportation">Transportation</option>
+    <option value="Other">Other</option>
+</select><br>
+
+<label for="dateText">Date:</label><br>
+<input class="form-control" type="date" id="dateText" placeholder="Date"><br>
+
+<label for="priceText">Price:</label><br>
+<input class="form-control" type="text" id="priceText" placeholder="Price"><br>
+
+<button type="button" class ="btn btn-primary" onclick="createNewCost()">Confirm</button>
+<br>
+<br><br>
+<h2>Search by Month and Year</h2>
+<input class="form-control" type="month" id="searchDateText" min="1900-01" value="2023-01"/>
+<button type="button" class ="btn btn-primary" onclick="getReport()">Search</button>
+<br>
+<br>
+<div id="tableDiv"></div>
+<script src="../src/idb.js"></script>
+<script>
+    // Initialize the database and enable user interactions when complete
+    async function initialize() {
+        try {
+            const dbInstance = await idb.openCostsDB("costsdb",1);
+            // Store the database instance for future use if necessary
+            window.dbInstance = dbInstance;
+            // Enable user interactions and update UI as needed
+            enableUserInteractions();
+        } catch (error) {
+            console.error('Error opening the database:', error);
+        }
+    }
+
+    // Disable user interactions during initialization
+    function disableUserInteractions() {
+        for (button of document.getElementsByTagName("button")) {
+            button.disabled = true;
+        }
+    }
+
+    // Enable user interactions after initialization
+    function enableUserInteractions() {
+        for (button of document.getElementsByTagName("button")) {
+            button.disabled = false;
+        }
+    }
+
+    // Call the initialization function when the document is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        // Disable user interactions during initialization
+        disableUserInteractions();
+
+        // Initialize the application
+        initialize();
+    });
+    async function createNewCost() {
+
+        const description = document.getElementById('descriptionText').value;
+        const sum = document.getElementById('priceText').value;
+        const category = document.getElementById('categoriesText').value;
+
+        let date = document.getElementById('dateText').value;
+
+        const current_Date = new Date().toJSON().slice(0, 10);
+
+        // Make sure variables are valid
+        if (!assertInput(description, sum, category)) {
+            alert("invalid input!");
+            return;
+        }
+
+        if ((date > current_Date) || date == "") {
+            alert('invalid date, setting date to today');
+            date = current_Date;
+        }
+
+        const cost = {
+            description: description,
+            sum: sum,
+            category: category,
+            date: date,
+        };
+        try {
+            const response = await window.dbInstance.addCost(cost);
+            alert(response);
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred while adding the cost.');
+        }
+    }
+
+    function assertInput(description, sum, category) {
+        if (description == '' || sum == '' || category == '') {
+            return false;
+        }
+        if (isNaN(sum) || sum < 0) {
+            return false;
+        }
+        return true;
+    }
+
+    async function getReport() {
+        // Clear the table content
+        const tableDiv = document.getElementById('tableDiv');
+        tableDiv.innerHTML = '';
+
+        // Get the search date
+        const searchDate = document.getElementById('searchDateText').value;
+        console.log('Formatted Search Date:', searchDate);
+
+        // Create the table element
+        const table = document.createElement('table');
+        table.classList.add('table');
+        table.border = '1';
+
+        // Output a placeholder row to ensure the table is created
+        const headerRow = table.insertRow();
+        headerRow.insertCell(0).textContent = 'Date';
+        headerRow.insertCell(1).textContent = 'Description';
+        headerRow.insertCell(2).textContent = 'Category';
+        headerRow.insertCell(3).textContent = 'Sum';
+
+        // Get the costs from IndexedDB based on the selected date
+        try {
+            const costs = await window.dbInstance.getCostsByDate(searchDate);
+            console.log('Retrieved Costs:', costs);
+
+            if (costs.length === 0) {
+                console.log('No costs found for the selected date.');
+            }
+
+            costs.forEach((cost) => {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = cost.date;
+                row.insertCell(1).textContent = cost.description;
+                row.insertCell(2).textContent = cost.category;
+                row.insertCell(3).textContent = cost.sum;
+            });
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred while fetching the report.');
+        }
+
+
+        tableDiv.append(table);
+    }
+</script>
+</body>
+</html>
